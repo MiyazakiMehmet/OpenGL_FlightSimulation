@@ -17,7 +17,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Eski fonksiyonlarý kapat
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "TaleWorlds Staj Projesi - Ucus Simulatoru", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Flight Simulation", NULL, NULL);
     if (window == NULL) {
         std::cout << "GLFW penceresi olusturulamadi!" << std::endl;
         glfwTerminate();
