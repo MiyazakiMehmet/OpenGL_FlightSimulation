@@ -8,6 +8,11 @@ void Shader::CompileShader(std::string& vertexCodePath, std::string& fragCodePat
 	std::string vertexCodeStr = ReadFile(vertexCodePath);
 	std::string fragCodeStr = ReadFile(fragCodePath);
 
+	if (vertexCodeStr.empty() || fragCodeStr.empty()) {
+		std::cerr << "Shader source empty. Check file paths: " << vertexCodePath << ", " << fragCodePath << std::endl;
+		return;
+	}
+
 	const char* vertexCode = vertexCodeStr.c_str();
 	const char* fragCode = fragCodeStr.c_str();
 
@@ -17,9 +22,30 @@ void Shader::CompileShader(std::string& vertexCodePath, std::string& fragCodePat
 	glShaderSource(vertexShader, 1, &vertexCode, NULL);
 	glCompileShader(vertexShader);
 
+	//Error Handling
+	GLint status = GL_FALSE;
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
+	if (status != GL_TRUE) {
+		GLint logLen = 0;
+		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logLen);
+		std::vector<char> log(logLen + 1);
+		glGetShaderInfoLog(vertexShader, logLen, nullptr, log.data());
+		std::cerr << "Vertex shader compile error:\n" << log.data() << std::endl;
+	}
+
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragCode, NULL);
 	glCompileShader(fragmentShader);
+
+	//Error Handling
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &status);
+	if (status != GL_TRUE) {
+		GLint logLen = 0;
+		glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logLen);
+		std::vector<char> log(logLen + 1);
+		glGetShaderInfoLog(fragmentShader, logLen, nullptr, log.data());
+		std::cerr << "Fragment shader compile error:\n" << log.data() << std::endl;
+	}
 
 	shaderID = glCreateProgram();
 	glAttachShader(shaderID, vertexShader);

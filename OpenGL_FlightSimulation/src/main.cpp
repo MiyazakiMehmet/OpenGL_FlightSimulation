@@ -1,6 +1,14 @@
 #include <glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <vector>
+#include <string>
+
+#include "Shader.h"
+#include "Mesh.h"
+
+Shader shader;
+Mesh mesh;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -19,7 +27,7 @@ int main() {
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "Flight Simulation", NULL, NULL);
     if (window == NULL) {
-        std::cout << "GLFW penceresi olusturulamadi!" << std::endl;
+        std::cout << "GLFW window could not be created!" << std::endl;
         glfwTerminate();
         return -1;
     }
@@ -30,15 +38,36 @@ int main() {
     glewExperimental = GL_TRUE;
 
     if (glewInit() != GLEW_OK) {
-        std::cout << "GLEW baslatilamadi!" << std::endl;
+        std::cout << "GLEW not initialized!" << std::endl;
         return -1;
     }
+
+    std::vector<float> vertices = {
+     0.5f,  0.5f, 0.0f,
+     0.5f, -0.5f, 0.0f,
+    -0.5f, -0.5f, 0.0f,
+    -0.5f,  0.5f, 0.0f
+    };
+    std::vector<unsigned int> indices = {
+        0, 1, 2
+    };
+
+    //Shader Handling
+    std::string vertexShaderPath = "src/shaders/VertexShader.vert";
+    std::string fragmentShaderPath = "src/shaders/FragmentShader.frag";
+    shader.CompileShader(vertexShaderPath, fragmentShaderPath);
+
+    mesh.CompileMesh(vertices, indices);
+
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Koyu turkuaz arka plan
         glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.UseShader();
+        mesh.RenderMesh();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
