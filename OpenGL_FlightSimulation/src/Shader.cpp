@@ -60,6 +60,14 @@ void Shader::UseShader() {
 	glUseProgram(shaderID);
 }
 
+void Shader::SetMat4(const std::string& name, const glm::mat4& matrix)
+{
+	GLint loc = glGetUniformLocation(shaderID, name.c_str());
+	if (loc != -1) {
+		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
+	}
+}
+
 std::string Shader::ReadFile(std::string& filePath)
 {
 	std::ifstream file(filePath);

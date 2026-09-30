@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <GLM/glm.hpp>
+#include <GLM/gtc/type_ptr.hpp>
 
 class Shader
 {
@@ -15,6 +17,10 @@ public:
 
     void CompileShader(std::string& vertexCodePath, std::string& fragmentCodePath);
     void UseShader();
+
+    //Upload Uniforms
+    void SetMat4(const std::string& name, const glm::mat4& matrix);
+
     std::string ReadFile(std::string& filePath);
     ~Shader();
 };

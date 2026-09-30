@@ -6,9 +6,11 @@
 
 #include "Shader.h"
 #include "Mesh.h"
+#include "Transform.h"
 
 Shader shader;
 Mesh mesh;
+Transform transform;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -59,6 +61,12 @@ int main() {
 
     mesh.CompileMesh(vertices, indices);
 
+    transform.position = glm::vec3(0.0f, 0.0f, -1.0f);
+	transform.rotation = glm::vec3(0.0f, 45.0f, 0.0f);
+	transform.scale = glm::vec3(0.5f);
+    glm::mat4 modelMatrix = transform.GetModelMatrix();
+
+
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -67,6 +75,9 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.UseShader();
+
+        shader.SetMat4("model", modelMatrix);
+
         mesh.RenderMesh();
 
         glfwSwapBuffers(window);
