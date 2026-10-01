@@ -1,6 +1,23 @@
 #include <glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <vector>
+#include <string>
+
+#include "Shader.h"
+#include "Mesh.h"
+#include "Transform.h"
+#include "Camera.h"
+
+Shader shader;
+Mesh mesh;
+Transform transform;
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), -90.0f, 0.0f);
+
+// mouse state for callbacks
+static bool firstMouse = true;
+static double lastX = 400.0;
+static double lastY = 300.0;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -11,6 +28,24 @@ void processInput(GLFWwindow* window) {
         glfwSetWindowShouldClose(window, true);
 }
 
+//Calls when the mouse is moved
+static void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+    if (!cam) return;
+
+    static bool firstMouse = true;
+    static double lastX = 400.0, lastY = 300.0;
+    if (firstMouse) { lastX = xpos; lastY = ypos; firstMouse = false; }
+
+    float xoffset = static_cast<float>(xpos - lastX);
+    float yoffset = static_cast<float>(lastY - ypos);
+    lastX = xpos; lastY = ypos;
+
+    //Updates the yaw and pitch
+    cam->ProcessMouseMovement(xoffset, yoffset);
+}
+
 int main() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // OpenGL 3.3
@@ -19,7 +54,7 @@ int main() {
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "Flight Simulation", NULL, NULL);
     if (window == NULL) {
-        std::cout << "GLFW penceresi olusturulamadi!" << std::endl;
+        std::cout << "GLFW window could not be created!" << std::endl;
         glfwTerminate();
         return -1;
     }
@@ -27,18 +62,58 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetWindowUserPointer(window, &camera);
+    glfwSetCursorPosCallback(window, CursorPosCallback);
+
     glewExperimental = GL_TRUE;
 
     if (glewInit() != GLEW_OK) {
-        std::cout << "GLEW baslatilamadi!" << std::endl;
+        std::cout << "GLEW not initialized!" << std::endl;
         return -1;
     }
+
+    std::vector<float> vertices = {
+     0.5f,  0.5f, 0.0f,
+     0.5f, -0.5f, 0.0f,
+    -0.5f, -0.5f, 0.0f,
+    -0.5f,  0.5f, 0.0f
+    };
+    std::vector<unsigned int> indices = {
+        0, 1, 2
+    };
+
+    //Shader Handling
+    std::string vertexShaderPath = "src/shaders/VertexShader.vert";
+    std::string fragmentShaderPath = "src/shaders/FragmentShader.frag";
+    shader.CompileShader(vertexShaderPath, fragmentShaderPath);
+
+    mesh.CompileMesh(vertices, indices);
+
+    transform.position = glm::vec3(0.0f, 0.0f, -1.0f);
+	transform.rotation = glm::vec3(0.0f, 45.0f, 0.0f);
+	transform.scale = glm::vec3(0.5f);
+    
+    glm::mat4 modelMatrix = transform.GetModelMatrix();
+
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Koyu turkuaz arka plan
+        glm::mat4 viewMatrix = camera.GetViewMatrix();
+        glm::mat4 getProjectionMatrix = camera.GetProjectionMatrix(45.0f, 800.0f / 600.0f, 0.1f, 100.0f);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        //glEnable(GL_DEPTH_TEST);
+
+        shader.UseShader();
+
+        shader.SetMat4("model", modelMatrix);
+        shader.SetMat4("view", viewMatrix);
+		shader.SetMat4("projection", getProjectionMatrix);
+
+        mesh.RenderMesh();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
