@@ -16,5 +16,8 @@ public:
     Camera(const glm::vec3& position = glm::vec3(0.0f, 0.0f, 3.0f), float yaw = -90.0f, float pitch = 0.0f);
 
     glm::mat4 GetViewMatrix() const;
-    void ProcessMouseMovenet(float xoffset, float yoffset, float sensitivity = 0.1f);
+    void ProcessMouseMovement(float xoffset, float yoffset, float sensitivity = 0.1f);
+    glm::mat4 GetProjectionMatrix(float fovDegrees, float aspect, float zNear, float zFar) const;
+    void UpdateCameraVectors();
+
 };

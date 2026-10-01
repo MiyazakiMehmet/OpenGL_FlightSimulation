@@ -11,6 +11,11 @@ glm::mat4 Camera::GetViewMatrix() const
     return glm::lookAt(position, position + front, up);
 }
 
+glm::mat4 Camera::GetProjectionMatrix(float fovDegrees, float aspect, float zNear, float zFar) const
+{
+    return glm::perspective(glm::radians(fovDegrees), aspect, zNear, zFar);
+}
+
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, float sensitivity)
 {
     xoffset *= sensitivity;
