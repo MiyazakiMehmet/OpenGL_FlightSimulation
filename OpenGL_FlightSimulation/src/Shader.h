@@ -20,6 +20,8 @@ public:
 
     //Upload Uniforms
     void SetMat4(const std::string& name, const glm::mat4& matrix);
+    void SetVec3(const std::string& name, const glm::vec3& vector);
+    void SetFloat(const std::string& name, float value);
 
     std::string ReadFile(std::string& filePath);
     ~Shader();

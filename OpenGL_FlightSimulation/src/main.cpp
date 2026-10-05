@@ -18,6 +18,8 @@ Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), -90.0f, 0.0f);
 static bool firstMouse = true;
 static double lastX = 400.0;
 static double lastY = 300.0;
+float currentFrame, deltaTime, lastFrame;
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -44,6 +46,21 @@ static void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 
     //Updates the yaw and pitch
     cam->ProcessMouseMovement(xoffset, yoffset);
+}
+
+//WASD movement
+void KeyboardMovement(GLFWwindow* window) {
+    currentFrame = static_cast<float>(glfwGetTime());
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
 int main() {
@@ -103,17 +120,24 @@ int main() {
         glm::mat4 viewMatrix = camera.GetViewMatrix();
         glm::mat4 getProjectionMatrix = camera.GetProjectionMatrix(45.0f, 800.0f / 600.0f, 0.1f, 100.0f);
 
+		KeyboardMovement(window);
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         //glEnable(GL_DEPTH_TEST);
 
         shader.UseShader();
 
+		//Uniform Initialization
         shader.SetMat4("model", modelMatrix);
         shader.SetMat4("view", viewMatrix);
 		shader.SetMat4("projection", getProjectionMatrix);
-
+        //First Object
+        shader.SetVec3("ambientColor", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.SetVec3("objectColor", glm::vec3(0.4f, 0.5f, 0.31f));
+        shader.SetFloat("ambientStrength", 0.2f);
         mesh.RenderMesh();
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();

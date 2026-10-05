@@ -68,6 +68,20 @@ void Shader::SetMat4(const std::string& name, const glm::mat4& matrix)
 	}
 }
 
+void Shader::SetVec3(const std::string& name, const glm::vec3& vector) {
+	GLint loc = glGetUniformLocation(shaderID, name.c_str());
+	if (loc != -1) {
+		glUniform3fv(loc, 1, glm::value_ptr(vector));
+	}
+}
+
+void Shader::SetFloat(const std::string& name, float value) {
+	GLint loc = glGetUniformLocation(shaderID, name.c_str());
+	if (loc != -1) {
+		glUniform1f(loc, value);
+	}
+}
+
 std::string Shader::ReadFile(std::string& filePath)
 {
 	std::ifstream file(filePath);
