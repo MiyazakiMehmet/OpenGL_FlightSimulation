@@ -90,22 +90,63 @@ int main() {
         return -1;
     }
 
-    std::vector<float> vertices = {
-     0.5f,  0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f,
-    -0.5f,  0.5f, 0.0f
-    };
-    std::vector<unsigned int> indices = {
-        0, 1, 2
-    };
+    std::vector<float> cubeVertices = {
+        // --- Ön Yüz (+Z) | Normal: (0, 0, 1) ---
+        -0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f, // 0
+         0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f, // 1
+         0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f, // 2
+        -0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f, // 3
 
+        // --- Arka Yüz (-Z) | Normal: (0, 0, -1) ---
+         0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f, // 4
+        -0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f, // 5
+        -0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f, // 6
+         0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f, // 7
+
+         // --- Üst Yüz (+Y) | Normal: (0, 1, 0) ---
+         -0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f, // 8
+          0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f, // 9
+          0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f, // 10
+         -0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f, // 11
+
+         // --- Alt Yüz (-Y) | Normal: (0, -1, 0) ---
+         -0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f, // 12
+          0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f, // 13
+          0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f, // 14
+         -0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f, // 15
+
+         // --- Sað Yüz (+X) | Normal: (1, 0, 0) ---
+          0.5f, -0.5f,  0.5f,    1.0f,  0.0f,  0.0f, // 16
+          0.5f, -0.5f, -0.5f,    1.0f,  0.0f,  0.0f, // 17
+          0.5f,  0.5f, -0.5f,    1.0f,  0.0f,  0.0f, // 18
+          0.5f,  0.5f,  0.5f,    1.0f,  0.0f,  0.0f, // 19
+
+          // --- Sol Yüz (-X) | Normal: (-1, 0, 0) ---
+          -0.5f, -0.5f, -0.5f,   -1.0f,  0.0f,  0.0f, // 20
+          -0.5f, -0.5f,  0.5f,   -1.0f,  0.0f,  0.0f, // 21
+          -0.5f,  0.5f,  0.5f,   -1.0f,  0.0f,  0.0f, // 22
+          -0.5f,  0.5f, -0.5f,   -1.0f,  0.0f,  0.0f  // 23
+    };
+    std::vector<unsigned int> cubeIndices = {
+        // Ön yüz
+        0,  1,  2,      2,  3,  0,
+        // Arka yüz
+        4,  5,  6,      6,  7,  4,
+        // Üst yüz
+        8,  9,  10,     10, 11, 8,
+        // Alt yüz
+        12, 13, 14,     14, 15, 12,
+        // Sað yüz
+        16, 17, 18,     18, 19, 16,
+        // Sol yüz
+        20, 21, 22,     22, 23, 20
+    };
     //Shader Handling
     std::string vertexShaderPath = "src/shaders/VertexShader.vert";
     std::string fragmentShaderPath = "src/shaders/FragmentShader.frag";
     shader.CompileShader(vertexShaderPath, fragmentShaderPath);
 
-    mesh.CompileMesh(vertices, indices);
+    mesh.CompileMesh(cubeVertices, cubeIndices);
 
     transform.position = glm::vec3(0.0f, 0.0f, -1.0f);
 	transform.rotation = glm::vec3(0.0f, 45.0f, 0.0f);
@@ -123,12 +164,14 @@ int main() {
 		KeyboardMovement(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        //glEnable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
 
         shader.UseShader();
 
 		//Uniform Initialization
+
         shader.SetMat4("model", modelMatrix);
         shader.SetMat4("view", viewMatrix);
 		shader.SetMat4("projection", getProjectionMatrix);
@@ -136,6 +179,12 @@ int main() {
         shader.SetVec3("ambientColor", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.SetVec3("objectColor", glm::vec3(0.4f, 0.5f, 0.31f));
         shader.SetFloat("ambientStrength", 0.2f);
+		shader.SetVec3("lightPos", glm::vec3(1.2f, 0.2f, 2.0f));
+		shader.SetVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.SetFloat("specularStrength", 0.6f);
+        shader.SetFloat("shininess", 32.0f);
+		shader.SetVec3("viewPos", camera.position);
+
         mesh.RenderMesh();
 
 
