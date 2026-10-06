@@ -171,6 +171,7 @@ int main() {
         shader.UseShader();
 
 		//Uniform Initialization
+
         shader.SetMat4("model", modelMatrix);
         shader.SetMat4("view", viewMatrix);
 		shader.SetMat4("projection", getProjectionMatrix);
@@ -178,8 +179,12 @@ int main() {
         shader.SetVec3("ambientColor", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.SetVec3("objectColor", glm::vec3(0.4f, 0.5f, 0.31f));
         shader.SetFloat("ambientStrength", 0.2f);
-		shader.SetVec3("lightPos", glm::vec3(1.2f, 1.0f, 2.0f));
+		shader.SetVec3("lightPos", glm::vec3(1.2f, 0.2f, 2.0f));
 		shader.SetVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.SetFloat("specularStrength", 0.6f);
+        shader.SetFloat("shininess", 32.0f);
+		shader.SetVec3("viewPos", camera.position);
+
         mesh.RenderMesh();
 
 
