@@ -8,6 +8,8 @@
 #include "Mesh.h"
 #include "Transform.h"
 #include "Camera.h"
+#include "PerlinNoise.h"
+#include "Terrain.h"
 
 Shader shader;
 Mesh mesh;
@@ -69,7 +71,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Eski fonksiyonlarý kapat
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Flight Simulation", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1600, 800, "Flight Simulation", NULL, NULL);
     if (window == NULL) {
         std::cout << "GLFW window could not be created!" << std::endl;
         glfwTerminate();
@@ -146,32 +148,45 @@ int main() {
     std::string fragmentShaderPath = "src/shaders/FragmentShader.frag";
     shader.CompileShader(vertexShaderPath, fragmentShaderPath);
 
-    mesh.CompileMesh(cubeVertices, cubeIndices);
+    // Generate Perlin terrain and upload to mesh
+    PerlinNoise pn(1337u);
+	float scale = 10.0f; //Çok açarsan detay azalýr
+	int width = 520;
+	int depth = 520;
+	float terrainAmplitude = 300.0f;
+	int terrainOctaves = 6;
+    CreatePerlinTerrain(mesh, pn, width, depth, scale, terrainAmplitude, terrainOctaves);
 
-    transform.position = glm::vec3(0.0f, 0.0f, -1.0f);
+    // move camera back to view terrain
+    camera.position = glm::vec3(0.0f, 5.0f, 20.0f);
+
+    transform.position = glm::vec3(0.0f, -35.0f, -1.0f);
 	transform.rotation = glm::vec3(0.0f, 45.0f, 0.0f);
 	transform.scale = glm::vec3(0.5f);
     
-    glm::mat4 modelMatrix = transform.GetModelMatrix();
+   
 
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
         glm::mat4 viewMatrix = camera.GetViewMatrix();
-        glm::mat4 getProjectionMatrix = camera.GetProjectionMatrix(45.0f, 800.0f / 600.0f, 0.1f, 100.0f);
+        glm::mat4 getProjectionMatrix = camera.GetProjectionMatrix(45.0f, 800.0f / 600.0f, 0.1f, 1000.0f);
 
 		KeyboardMovement(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE); // Disable face culling to render both sides of the terrain
 
+        glm::mat4 modelMatrix = transform.GetModelMatrix();
 
         shader.UseShader();
 
-		//Uniform Initialization
+        transform.position = glm::vec3(45.0f, -50.0f, 45.0f); // X, Y, Z
 
+		//Uniform Initialization
         shader.SetMat4("model", modelMatrix);
         shader.SetMat4("view", viewMatrix);
 		shader.SetMat4("projection", getProjectionMatrix);
@@ -179,9 +194,9 @@ int main() {
         shader.SetVec3("ambientColor", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.SetVec3("objectColor", glm::vec3(0.4f, 0.5f, 0.31f));
         shader.SetFloat("ambientStrength", 0.2f);
-		shader.SetVec3("lightPos", glm::vec3(1.2f, 0.2f, 2.0f));
+		shader.SetVec3("lightPos", glm::vec3(1.2f, 1.0f, 2.0f));
 		shader.SetVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-        shader.SetFloat("specularStrength", 0.6f);
+        shader.SetFloat("specularStrength", 0.15f);
         shader.SetFloat("shininess", 32.0f);
 		shader.SetVec3("viewPos", camera.position);
 

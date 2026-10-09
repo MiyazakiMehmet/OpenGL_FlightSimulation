@@ -24,10 +24,8 @@ Texture::Texture(const char* texPath) {
 	textureData = nullptr;
 }
 
-// Loads texture from file (returning bool for model loading instead of void) 
 bool Texture::LoadTexture() {
 	stbi_set_flip_vertically_on_load(true);
-	// try several likely relative locations so running from the exe folder still finds the asset
 	std::string base = texturePath;
 	textureData = stbi_load(base.c_str(), &width, &height, &nrChannels, 0);
 
@@ -36,7 +34,6 @@ bool Texture::LoadTexture() {
 		return false;
 	}
 
-	// leave uploading to CompileTexture
 	return true;
 }
 
